@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">AsistenciaIbiz</string>
+    <string name="prompt_nombre">Nombre</string>
+    <string name="prompt_proyecto">Proyecto</string>
+</resources>

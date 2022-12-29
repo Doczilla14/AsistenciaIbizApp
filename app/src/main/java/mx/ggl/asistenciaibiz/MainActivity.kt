@@ -8,9 +8,11 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
+import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.text.format.Formatter
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -43,6 +45,10 @@ class MainActivity : AppCompatActivity() {
         } else {
             enableView()
         }
+        val wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+        val ipAddress: String = Formatter.formatIpAddress(wifiManager.connectionInfo.ipAddress)
+        binding.tvIP.text = "Direccion IP del dispositivo: $ipAddress"
+        println("Direccion IP del dispositivo: $ipAddress")
 
     }
 

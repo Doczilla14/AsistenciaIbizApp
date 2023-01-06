@@ -20,12 +20,20 @@ import androidx.loader.app.LoaderManager
 import androidx.loader.content.AsyncTaskLoader
 import androidx.loader.content.Loader
 import mx.ggl.asistenciaibiz.databinding.ActivityMainBinding
+import org.ksoap2.SoapEnvelope
 import org.ksoap2.serialization.SoapObject
 import org.ksoap2.serialization.SoapPrimitive
+import org.ksoap2.serialization.SoapSerializationEnvelope
+import org.ksoap2.transport.HttpTransportSE
+import org.w3c.dom.Element
+import org.w3c.dom.Node
+import org.xml.sax.InputSource
+import java.io.StringReader
+import javax.xml.parsers.DocumentBuilderFactory
 
 private const val PERMISSION_REQUEST = 10
 
-class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<List<String>>{
+abstract class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<List<String>>{
 
     //VARIABLES
     //binding
@@ -44,7 +52,7 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<List<Str
 
     private val soapaction = nameSpace+methodName
 
-    private val url= ""
+    private val url= "https://ibiz.fluig.com:1205/webdesk/ECMDatasetService"
 
     private val loaderIDconstant = 1
 
@@ -214,13 +222,28 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<List<Str
             override fun onStartLoading() {
                 super.onStartLoading()
                 forceLoad()
+            }
             override fun loadInBackground(): List<String>? {
                 val request = SoapObject(nameSpace,methodName)
-                request.addProperty()
+                request.addProperty("PROYECTO", "")
+
+                val envelope=SoapSerializationEnvelope(SoapEnvelope.VER12)
+                envelope.dotNet = true
+                envelope.setOutputSoapObject(request)
+
+                val httpTransport = HttpTransportSE(url)
+                try {
+                    httpTransport.call(soapaction, envelope)
+                    return extractDataFromXmlResponse(envelope)
+                }catch(e: Exception) {
+                    e.printStackTrace()
+                }
+                return null
+                }
             }
         }
 
-    }
+
 
     override fun onLoadFinished(p0: Loader<List<String>>, data: List<String>?) {
         TODO("Not yet implemented")
@@ -229,17 +252,38 @@ class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<List<Str
     override fun onLoaderReset(p0: Loader<List<String>>) {
         TODO("Not yet implemented")
     }
+    @Throws(Exception::class)
+    private fun extractDataFromXmlResponse(envelope: SoapSerializationEnvelope): List<String>? {
+        val listaProyectos =mutableListOf<String>()
+
+        val docBuildFactory=DocumentBuilderFactory.newInstance()
+        val docBuilder = docBuildFactory.newDocumentBuilder()
+        val doc= docBuilder.parse(InputSource(StringReader(envelope.response.toString())))
+
+        val nodeList=doc.getElementsByTagName("Table")
+        for (i in 0..nodeList.length - 1) {
+            val node = nodeList.item(i)
+            if (node.nodeType == Node.ELEMENT_NODE){
+                val element = node as Element
+
+                listaProyectos.add(element.getElementsByTagName("PROYECTO").item(0).textContent)
+            }
+        }
+        return listaProyectos
+    }
 }
 
-    /*private lateinit var binding: ActivityMainBinding
+
+
+/*private lateinit var binding: ActivityMainBinding
 
 
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        //setContentView(R.layout.activity_main)
-        //inicializar binding
-        binding=ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root) //vista principal
-    }*/
+override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    //setContentView(R.layout.activity_main)
+    //inicializar binding
+    binding=ActivityMainBinding.inflate(layoutInflater)
+    setContentView(binding.root) //vista principal
+}*/
 

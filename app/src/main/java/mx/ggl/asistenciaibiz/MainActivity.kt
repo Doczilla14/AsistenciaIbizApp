@@ -16,18 +16,38 @@ import android.text.format.Formatter
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.loader.app.LoaderManager
+import androidx.loader.content.AsyncTaskLoader
+import androidx.loader.content.Loader
 import mx.ggl.asistenciaibiz.databinding.ActivityMainBinding
+import org.ksoap2.serialization.SoapObject
+import org.ksoap2.serialization.SoapPrimitive
 
 private const val PERMISSION_REQUEST = 10
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks<List<String>>{
 
+    //VARIABLES
+    //binding
     private lateinit var binding: ActivityMainBinding
+
+    //implementacion de ubicacion
     lateinit var locationManager: LocationManager
     private var hasGps = false
     private var hasNetwork = false
     private var locationGps: Location? = null
     private var locationNetwork: Location? = null
+
+    //implementacion de SOAP
+    private val nameSpace = "http://ws.dataservice.ecm.technology.totvs.com/"
+    private val methodName ="getDatasetResponse"
+
+    private val soapaction = nameSpace+methodName
+
+    private val url= ""
+
+    private val loaderIDconstant = 1
+
 
     private var permissions = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,6 +69,8 @@ class MainActivity : AppCompatActivity() {
         val ipAddress: String = Formatter.formatIpAddress(wifiManager.connectionInfo.ipAddress)
         binding.tvIP.text = "Direccion IP del dispositivo: $ipAddress"
         println("Direccion IP del dispositivo: $ipAddress")
+
+        loaderManager.initLoader(loaderIDconstant,null,this)
 
     }
 
@@ -185,6 +207,27 @@ class MainActivity : AppCompatActivity() {
                 enableView()
 
         }
+    }
+
+    override fun onCreateLoader(p0: Int, p1: Bundle?): Loader<List<String>> {
+        return object : AsyncTaskLoader<List<String>>(this){
+            override fun onStartLoading() {
+                super.onStartLoading()
+                forceLoad()
+            override fun loadInBackground(): List<String>? {
+                val request = SoapObject(nameSpace,methodName)
+                request.addProperty()
+            }
+        }
+
+    }
+
+    override fun onLoadFinished(p0: Loader<List<String>>, data: List<String>?) {
+        TODO("Not yet implemented")
+    }
+
+    override fun onLoaderReset(p0: Loader<List<String>>) {
+        TODO("Not yet implemented")
     }
 }
 

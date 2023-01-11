@@ -19,6 +19,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.loader.app.LoaderManager
 import androidx.loader.content.AsyncTaskLoader
 import androidx.loader.content.Loader
+import androidx.recyclerview.widget.LinearLayoutManager
 import mx.ggl.asistenciaibiz.databinding.ActivityMainBinding
 import org.ksoap2.SoapEnvelope
 import org.ksoap2.serialization.SoapObject
@@ -79,6 +80,12 @@ abstract class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks
         println("Direccion IP del dispositivo: $ipAddress")
 
         loaderManager.initLoader(loaderIDconstant,null,this)
+
+        binding.recyclerView.layoutManager=LinearLayoutManager(this)
+        binding.recyclerView.setHasFixedSize(true)
+
+        binding.recyclerView.adapter=AdaptadorProyectos(mutableListOf<String>())
+
 
     }
 
@@ -225,7 +232,7 @@ abstract class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks
             }
             override fun loadInBackground(): List<String>? {
                 val request = SoapObject(nameSpace,methodName)
-                request.addProperty("PROYECTO", "")
+                request.addProperty("PROYECTO", "PROYECTOS")
 
                 val envelope=SoapSerializationEnvelope(SoapEnvelope.VER12)
                 envelope.dotNet = true
@@ -245,8 +252,8 @@ abstract class MainActivity : AppCompatActivity(), LoaderManager.LoaderCallbacks
 
 
 
-    override fun onLoadFinished(p0: Loader<List<String>>, data: List<String>?) {
-        TODO("Not yet implemented")
+    override fun onLoadFinished(p0: Loader<List<String>>?, responseData: List<String>) {
+        binding.recyclerView.adapter=AdaptadorProyectos(responseData)
     }
 
     override fun onLoaderReset(p0: Loader<List<String>>) {
